@@ -38,11 +38,11 @@ Pod Failure → Log Collection → Pattern Analysis → AI Explanation → Human
 
 | Component | Purpose | Technology |
 |-----------|---------|------------|
-| **Operator** | Kubernetes controller managing podmortem lifecycles | Quarkus + Kubernetes Java SDK |
-| **Log Parser** | Pattern matching and context extraction engine | Quarkus REST services |
-| **AI Interface** | Connects to various AI providers for explanations | Quarkus with provider integrations |
-| **AI Provider Library** | Implements provider SDKs (OpenAI-compatible, Ollama, vLLM) and prompt engine | Java library |
-| **Common Library** | Shared models, utilities, and CRD definitions | Java library |
+| **[Operator](https://github.com/podmortem/operator)** | Kubernetes controller managing podmortem lifecycles | Quarkus + Kubernetes Java SDK |
+| **[Log Parser](https://github.com/podmortem/log-parser)** | Pattern matching and context extraction engine | Quarkus REST services |
+| **[AI Interface](https://github.com/podmortem/ai-interface)** | Connects to various AI providers for explanations | Quarkus with provider integrations |
+| **[AI Provider Library](https://github.com/podmortem/ai-provider-lib)** | Implements provider SDKs (OpenAI-compatible, Ollama, vLLM) and prompt engine | Java library |
+| **[Common Library](https://github.com/podmortem/common-lib)** | Shared models, utilities, and CRD definitions | Java library |
 
 ## Sample Output
 
