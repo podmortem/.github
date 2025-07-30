@@ -1,8 +1,9 @@
 # Podmortem
 
-> Intelligent postmortem pod failure analysis
+> AI-powered Kubernetes postmortem pod failure analysis operator.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-Operator-blue.svg)](https://kubernetes.io/)
 
 **Podmortem** is a Kubernetes-native operator that automatically analyzes pod failures and provides intelligent explanations of what went wrong. Instead of manually digging through thousands of log lines, Podmortem uses community-driven pattern libraries and AI integration to identify root causes and suggest remediation steps.
 
