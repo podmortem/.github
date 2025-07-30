@@ -370,6 +370,52 @@ spec:
 EOF
 ```
 
+1. **Configure a Pattern Library**:
+
+   **Option A: Public Repository (Community Patterns)**
+   ```bash
+   kubectl apply -n podmortem-system -f - <<EOF
+   apiVersion: podmortem.redhat.com/v1alpha1
+   kind: PatternLibrary
+   metadata:
+     name: quarkus-patterns
+   spec:
+     repository:
+       url: https://github.com/podmortem/patterns-quarkus
+       branch: main
+       path: patterns
+     syncEnabled: true
+     syncInterval: "24h"
+   EOF
+   ```
+
+   **Option B: Private Repository (Enterprise Patterns)**
+   ```bash
+   # First create credentials for your private pattern repository
+   kubectl create secret generic pattern-repo-creds -n podmortem-system \
+     --from-literal=username=< YOUR GIT USERNAME > \
+     --from-literal=token=< YOUR GIT PAT >
+
+   # Then create the PatternLibrary resource
+   kubectl apply -n podmortem-system -f - <<EOF
+   apiVersion: podmortem.redhat.com/v1alpha1
+   kind: PatternLibrary
+   metadata:
+     name: quarkus-patterns
+   spec:
+     repository:
+       url: https://github.com/your-org/patterns-quarkus-private
+       branch: main
+       path: patterns
+       credentials:
+         secretName: pattern-repo-creds
+         usernameKey: username
+         tokenKey: token
+     syncEnabled: true
+     syncInterval: "24h"
+   EOF
+   ```
+
 1. **Create a Podmortem monitor CR**:
 ```bash
 kubectl apply -n podmortem-system -f - <<EOF
