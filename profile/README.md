@@ -34,6 +34,23 @@ Pod Failure → Log Collection → Pattern Analysis → AI Explanation → Human
 - **Context Aware**: AI understands broader failure context
 - **Provider Agnostic**: Works with OpenAI, Ollama, vLLM, or enterprise AI services
 
+### Observability and Events
+
+Podmortem reports analysis via Kubernetes Events in addition to a concise status on the `Podmortem` CR:
+
+- **PodmortemAnalysisComplete** (Normal): Emitted when analysis finishes. The note includes a summary and, if AI is enabled, a trimmed AI analysis text or a note such as "AI disabled" or "AI provider not found".
+- **PodmortemAnalysisError** (Warning): Emitted on analysis or AI errors.
+
+Events are emitted on the failed Pod, its owning Deployment (if any), and the `Podmortem` CR.
+
+View events:
+
+```bash
+kubectl get events -n podmortem-system --sort-by=.lastTimestamp
+kubectl describe pod <pod> -n <ns>
+kubectl describe podmortem <name> -n podmortem-system
+```
+
 ## Architecture
 
 | Component | Purpose | Technology |
@@ -343,13 +360,13 @@ git clone https://github.com/podmortem/helm-charts.git
 cd helm-charts
 ```
 
-1. **Install the chart**:
+2. **Install the chart**:
 ```bash
 helm upgrade --install podmortem ./charts/podmortem-operator \
   --create-namespace -n podmortem-system
 ```
 
-1. **Configure an AI provider** (example for OpenAI):
+3. **Configure an AI provider** (example for OpenAI):
 ```bash
 # Replace YOUR_KEY
 kubectl create secret generic openai-secret -n podmortem-system \
@@ -371,7 +388,7 @@ spec:
 EOF
 ```
 
-1. **Configure a Pattern Library**:
+4. **Configure a Pattern Library**:
 
    **Option A: Public Repository (Community Patterns)**
    ```bash
@@ -417,7 +434,7 @@ EOF
    EOF
    ```
 
-1. **Create a Podmortem monitor CR**:
+5. **Create a Podmortem monitor CR**:
 ```bash
 kubectl apply -n podmortem-system -f - <<EOF
 apiVersion: podmortem.redhat.com/v1alpha1
@@ -435,7 +452,26 @@ spec:
 EOF
 ```
 
-1. **Check status:**
+### Accessing AI Analysis
+
+Due to Kubernetes Event size limits (1KB), full AI analysis is stored in multiple locations:
+
+**1. Pod Annotations** - Immediate access to the full analysis:
 ```bash
-kubectl get podmortems -n podmortem-system -o yaml
+# View full AI analysis
+kubectl get pod <pod> -o jsonpath='{.metadata.annotations.podmortem\.io/analysis}'
+
+# View all podmortem annotations
+kubectl describe pod <pod> | grep "podmortem.io/"
 ```
+
+**2. Podmortem CR Status** - Historical tracking (last 10 failures):
+```bash
+# View recent failures with full analysis
+kubectl get podmortem <name> -o yaml
+
+# Get the most recent analysis
+kubectl get podmortem <name> -o jsonpath='{.status.recentFailures[0].explanation}'
+```
+
+**3. Events** - Abbreviated analysis optimized for Root Cause and Fix sections
