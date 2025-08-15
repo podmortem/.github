@@ -277,43 +277,66 @@ Caused by: org.hibernate.service.spi.ServiceException: Unable to create requeste
 ```
 </details>
 
-### Poodmortems response
+### Podmortem's response
 
-| 🤖 **AI Analysis Result** | Generated automatically in under 5 seconds |
+| 🤖 **AI Analysis Result** | Generated automatically in 70 seconds |
 |---|---|
 
 ```
-The highest scoring pattern is "Database Connection 
-Failure (CRITICAL)" with a score of 13.772475369458128, which occurs at line 
-80. The logs indicate that the application is unable to connect to the local 
-PostgreSQL database, with the error message "Connection to localhost:5432 
-refused. Check that the hostname and port are correct."
- 
-The context before the error indicates that the ProductResource is updating the 
-product catalog, while the context after the error shows that the OrderService 
-is retrying the database operation. This sequence of events suggests that the 
-issue might have been caused by a sudden spike in database usage, which could 
-have overwhelmed the database and caused it to stop responding.
- 
-To confirm this hypothesis, we should check if the PostgreSQL service is 
-running by executing the command "systemctl status postgresql". If the service 
-is not running, we should start it by running "sudo systemctl start postgresql".
+**Root Cause**: The primary root cause of the pod failure is the **REST Client Connection Error** 
+with a score of 9.775666542449912. This error occurred due to the remote service being unreachable, 
+leading to multiple timeouts and ultimately causing the REST client to fail.
+
+**Evidence**: 
+* Log message from Line 13: `ConnectException: Connection refused (Connection refused)`
+* Context Before: The Quarkus application was started in 2.234s.
+* Context After: A `java.net.ConnectException` occurred with a connection refused error.
+
+**Fix**: 
+1. Verify that the remote service is running and accessible by checking its health endpoints or status pages.
+2. If the remote service is down, restart it or investigate any underlying issues causing the downtime.
+3. Once the remote service is up and running, update the Quarkus configuration to increase the timeout 
+   values for the REST client.
+
+Example command:
+# Increase timeout values in configuration
+echo "quarkus.rest.client.timeout=30" >> application.properties
+
+**Prevention**: 
+1. Regularly monitor the health of remote services using health endpoints or status pages.
+2. Implement circuit breakers or retries to handle temporary connectivity issues.
+3. Consider using a load balancer or service discovery mechanism to ensure that requests are routed 
+   to available instances of the remote service.
+
+**Sequence of Events**: 
+* Initial trigger: The REST client attempts to connect to the remote service, but it is unreachable 
+  due to being down or unavailable (Line 13).
+* Cascade: The `ConnectException` causes multiple timeouts and ultimately leads to a failure of the 
+  REST client (Lines 14-17, 30-32).
+* Final state: The pod fails due to the propagation of the errors from the REST client connection error.
+
+By addressing the root cause of the REST Client Connection Error and implementing preventative 
+measures, you can reduce the likelihood of similar failures occurring in the future.
 ```
 
 ---
 
 ### Technical Specifications
 
-The output above was achived with the following model/hardware.
+The output above was achieved with the following model/hardware.
 
 | Component | Specification |
 |-----------|---------------|
-| **AI Model** | `mistralai/Mistral-7B-Instruct-v0.2` |
-| **GPU Hardware** | `1x NVIDIA A100 SXM (80GB)` |
-| **Compute Resources** | `32 vCPU, 125GB RAM` |
-| **GPU Utilization** | `95%` |
-| **Inference Server** | `vLLM` |
-| **Response Time** | `< 5 seconds` |
+| **AI Model** | `llama3.2:3b-instruct-q4_K_M` |
+| **GPU Hardware** | `NVIDIA Jetson AGX Orin 64GB` |
+| **Compute Resources** | `12-core ARM Cortex-A78AE, 64GB LPDDR5` |
+| **GPU Utilization** | `~85%` |
+| **Inference Server** | `Ollama` |
+| **Response Time** | `70 seconds` |
+
+> **Note**: Response times may be significantly faster with more powerful models (e.g., llama3.1:8b) 
+> or dedicated GPU infrastructure. The analysis quality shown demonstrates Podmortem's capability 
+> to provide detailed failure analysis even on edge computing hardware (or my homelab environment, in this case).
 
 
 ## Pattern Libraries
